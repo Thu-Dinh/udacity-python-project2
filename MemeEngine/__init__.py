@@ -1,2 +1,2 @@
-"""`memeengine` module manipulates and displays text on images."""
+"""`MemeEngine` module manipulates and displays text on images."""
 from .MemeGenerator import MemeGenerator
