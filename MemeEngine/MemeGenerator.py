@@ -30,7 +30,7 @@ class MemeGenerator:
         :param quote_author: Quote Author text
         :param output_width: Desired image output width
         :param text_width_percent: Percentage of image with for text to use
-        :param font_size: Set font size, overridden when using the `scale_text=True` param in overlay_text method
+        :param font_size: set font size
         """
         self.output_path = Path(output_dir)
         self.quote_body = quote_body
