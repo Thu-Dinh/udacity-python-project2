@@ -25,13 +25,15 @@ python main.py --path './_data/photos/dog/xander_1.jpg' --body 'This is body' --
 ```
 
 ### Run by web application
-- Start server by running below commands:
+- Start server by running below commands and after that Access application by URL http://127.0.0.1:3000/
 ```
 export FLASK_APP=app.py
 flask run --host 0.0.0.0 --port 3000 --reload
 ```
-- Access application by URL below:
-http://127.0.0.1:3000/
+- Or run the below command and access by URL: http://127.0.0.1:5000/
+```
+python3 app.py
+```
 
 ## Modules
 ### main module
