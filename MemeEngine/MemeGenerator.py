@@ -1,4 +1,9 @@
-"""Meme generators overlays text(body, author) from `QuoteEngine` on  image files."""
+"""MemeGenerator class.
+
+This class overlays text(body, author)
+from `QuoteEngine` on  image files.
+"""
+
 import tempfile
 from pathlib import Path
 from typing import Tuple
@@ -22,7 +27,7 @@ class MemeGenerator:
                  ):
         """Creation of a Meme Image.
 
-        All params have defaults so they can be applied(or not) and any desired fashion.
+        All params have defaults so they can be applied(or not).
 
         :param output_dir: Destination directory for saving
         :param input_image_path: Path and filename for image load
@@ -57,12 +62,11 @@ class MemeGenerator:
         self._quote_author = value
 
     def load_image(self, image_path: str) -> None:
-        """Return None after loading an image from path into class attribute."""
+        """Return None after loading an image from path."""
         self.image = Image.open(image_path)
 
     def overlay_text(self, output_width: int = None):
         """Overlays text on loaded image."""
-
         if output_width:
             self.crop_image(output_width=output_width)
 
@@ -73,24 +77,29 @@ class MemeGenerator:
 
         lines = textwrap.wrap(self.quote_body, width=40)
         for line in lines:
-            d1.text(position, line, font=self.font_body, anchor='rb', fill=(255, 255, 255))
+            d1.text(position, line, font=self.font_body,
+                    anchor='rb', fill=(255, 255, 255))
 
         author_lines = textwrap.wrap(self.quote_author, width=40)
         for line in author_lines:
-            d1.text(position, line, font=self.font_author, anchor='rt', fill=(255, 255, 255))
+            d1.text(position, line, font=self.font_author,
+                    anchor='rt', fill=(255, 255, 255))
 
     def save_image(self):
         """Return path of saved image file."""
         self.output_path.mkdir(parents=True, exist_ok=True)
-        full_output_path = tempfile.NamedTemporaryFile(dir=self.output_path.name, prefix='meme-generator-',
-                                                       suffix='.jpg', delete=False).name
+        full_output_path = tempfile.NamedTemporaryFile(
+            dir=self.output_path.name,
+            prefix='meme-generator-',
+            suffix='.jpg',
+            delete=False).name
         self.image.save(full_output_path)
         return str(self.output_path) + "/" + str(Path(full_output_path).name)
 
     def crop_image(self, output_width: int = None) -> None:
         """Return an image crop cropped to single_dim keeping aspect ratio."""
         if not output_width and not self.output_width:
-            raise ValueError("output_width must be supplied or set on instance before calling fit_image")
+            raise ValueError("utput_width isn't set")
         if output_width and self.output_width != output_width:
             self.output_width = output_width
 
@@ -100,30 +109,45 @@ class MemeGenerator:
 
     def set_font_size(self, size: int) -> None:
         """Return a font for author based on class attributes."""
-
-        self.font_body = FreeTypeFont('./MemeEngine/fonts/OpenSans-ExtraBold.ttf', size)
-        self.font_author = FreeTypeFont('./MemeEngine/fonts/OpenSans-LightItalic.ttf', int(size * 0.7))
+        fnt_body_path = './MemeEngine/fonts/OpenSans-ExtraBold.ttf'
+        fnt_author_path = './MemeEngine/fonts/OpenSans-LightItalic.ttf'
+        self.font_body = FreeTypeFont(fnt_body_path, size)
+        self.font_author = FreeTypeFont(fnt_author_path, int(size * 0.7))
 
     def set_fonts_image_scale(self, text_width_pct: float = None) -> None:
-        """Return two fonts for body and author text scaled to percentage of width."""
+        """Set font for image.
+
+        Return two fonts for body
+        and author text scaled to percentage of width.
+        """
         if text_width_pct and self.text_width_percent != text_width_pct:
             self.text_width_percent = text_width_pct
         self.set_font_size(1)
-        while self.font_body.getlength(self.quote_body) < self.image.width * self.text_width_percent:
+        lines = textwrap.fill(self.quote_body, width=50)
+        while self.font_body.getlength(lines[0]) \
+                < self.image.width * self.text_width_percent:
             self.set_font_size(self.font_body.size + 1)
 
     def random_image_position(self) -> Tuple[int, int]:
         """Return random position for text placement."""
-        box_padding = np.append(self.font_body.getbbox(self.quote_body, anchor='rb')[:2],
-                                np.array(self.font_author.getbbox(self.quote_author, anchor='rt')[2:])) * -1
-        x_min, y_min, x_max, y_max = tuple(np.array(((0, 0), self.image.size)).flatten() + box_padding)
-        return np.random.random_integers(x_min, x_max), np.random.random_integers(y_min, y_max)
+        box_padding = np.append(self.font_body.getbbox(
+            self.quote_body, anchor='rb')[:2], np.array(
+            self.font_author.getbbox(self.quote_author, anchor='rt')[2:])) * -1
 
-    def make_meme(self, img_path: str, quote_body: str, quote_author: str, width: int = 500) -> str:
+        x_min, y_min, x_max, y_max = tuple(
+            np.array(((0, 0), self.image.size)).flatten() + box_padding)
+
+        return np.random.random_integers(x_min, x_max),\
+            np.random.random_integers(y_min, y_max)
+
+    def make_meme(self, img_path: str, quote_body: str,
+                  quote_author: str, width: int = 500) -> str:
         """Override previously supplied params and saves image.
 
-        :param img_path: Loads image from path, overriding and previously stored image
-        :param quote_body: Loads quote_body from supplied text, overriding quote_body a previously set quote_body
+        :param img_path: Loads image from path,
+        overriding and previously stored image
+        :param quote_body: Loads quote_body from supplied text,
+        overriding quote_body a previously set quote_body
         :param quote_author: Same as quote_body but for quote_author
         :param width: Scaled image keeping
         :return: location of saved file as a str

@@ -1,3 +1,4 @@
+"""This class to run by command lines."""
 import os
 import random
 import argparse
@@ -8,7 +9,7 @@ from MemeEngine import MemeGenerator
 
 
 def generate_meme(path=None, body=None, author=None):
-    """ Generate a meme given an path and a quote """
+    """Generate a meme given an path and a quote."""
     img = None
     quote = None
 
@@ -44,8 +45,11 @@ def generate_meme(path=None, body=None, author=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--path', type=str, default=None, help="Path to an image file.")
-    parser.add_argument('-b', '--body', type=str, default=None, help="Body or Content written to image.")
-    parser.add_argument('-a', '--author', type=str, default=None, help="Author name written to image.")
+    parser.add_argument('-p', '--path', type=str,
+                        default=None, help="Path to an image file.")
+    parser.add_argument('-b', '--body', type=str,
+                        default=None, help="Body or Content written to image.")
+    parser.add_argument('-a', '--author', type=str,
+                        default=None, help="Author name written to image.")
     args = parser.parse_args()
     print(generate_meme(args.path, args.body, args.author))
