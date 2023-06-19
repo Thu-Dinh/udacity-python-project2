@@ -6,11 +6,9 @@ from `QuoteEngine` on  image files.
 
 import tempfile
 from pathlib import Path
-from typing import Tuple
 import textwrap
-import numpy as np
-from PIL import Image, ImageDraw, ImageOps
-from PIL.ImageFont import FreeTypeFont
+import random
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 
 
 class MemeGenerator:
@@ -21,9 +19,7 @@ class MemeGenerator:
                  input_image_path: str = None,
                  quote_body: str = '',
                  quote_author: str = '',
-                 output_width: int = None,
-                 text_width_percent: float = 0.7,
-                 font_size: int = None,
+                 output_width: int = None
                  ):
         """Creation of a Meme Image.
 
@@ -34,15 +30,11 @@ class MemeGenerator:
         :param quote_body: Quote body text
         :param quote_author: Quote Author text
         :param output_width: Desired image output width
-        :param text_width_percent: Percentage of image with for text to use
-        :param font_size: set font size
         """
         self.output_path = Path(output_dir)
         self.quote_body = quote_body
         self._quote_author = quote_author
         self.output_width = output_width
-        self.text_width_percent = text_width_percent
-        self.font_size = font_size
 
         self.font_body = None
         self.font_author = None
@@ -70,20 +62,25 @@ class MemeGenerator:
         if output_width:
             self.crop_image(output_width=output_width)
 
-        self.set_fonts_image_scale()
-        position = self.random_image_position()
+        fnt_body_path = './MemeEngine/fonts/OpenSans-ExtraBold.ttf'
+        fnt_author_path = './MemeEngine/fonts/OpenSans-LightItalic.ttf'
+        self.font_body = ImageFont.truetype(fnt_body_path, 25)
+        self.font_author = ImageFont.truetype(fnt_author_path, 20)
 
         d1 = ImageDraw.Draw(self.image)
 
-        lines = textwrap.wrap(self.quote_body, width=40)
-        for line in lines:
-            d1.text(position, line, font=self.font_body,
-                    anchor='rb', fill=(255, 255, 255))
+        body_lines = textwrap.wrap(self.quote_body, width=30)
+        body = textwrap.fill(self.quote_body, width=30)
+        author = textwrap.fill(self.quote_author, width=30)
 
-        author_lines = textwrap.wrap(self.quote_author, width=40)
-        for line in author_lines:
-            d1.text(position, line, font=self.font_author,
-                    anchor='rt', fill=(255, 255, 255))
+        x_body = random.randint(10, 30)
+        y_body = random.randint(10, 300)
+        x_author = x_body + 30
+        y_author = y_body + len(body_lines) * 35 + 5
+        d1.text((x_body, y_body), body,
+                font=self.font_body, fill="white")
+        d1.text((x_author, y_author), author,
+                font=self.font_author, fill="white")
 
     def save_image(self):
         """Return path of saved image file."""
@@ -106,39 +103,6 @@ class MemeGenerator:
         scale = output_width / self.image.width
         w, h = self.image.size[0] * scale, self.image.size[0] * scale
         self.image = ImageOps.fit(self.image, (int(w), int(h)))
-
-    def set_font_size(self, size: int) -> None:
-        """Return a font for author based on class attributes."""
-        fnt_body_path = './MemeEngine/fonts/OpenSans-ExtraBold.ttf'
-        fnt_author_path = './MemeEngine/fonts/OpenSans-LightItalic.ttf'
-        self.font_body = FreeTypeFont(fnt_body_path, size)
-        self.font_author = FreeTypeFont(fnt_author_path, int(size * 0.7))
-
-    def set_fonts_image_scale(self, text_width_pct: float = None) -> None:
-        """Set font for image.
-
-        Return two fonts for body
-        and author text scaled to percentage of width.
-        """
-        if text_width_pct and self.text_width_percent != text_width_pct:
-            self.text_width_percent = text_width_pct
-        self.set_font_size(1)
-        lines = textwrap.fill(self.quote_body, width=50)
-        while self.font_body.getlength(lines[0]) \
-                < self.image.width * self.text_width_percent:
-            self.set_font_size(self.font_body.size + 1)
-
-    def random_image_position(self) -> Tuple[int, int]:
-        """Return random position for text placement."""
-        box_padding = np.append(self.font_body.getbbox(
-            self.quote_body, anchor='rb')[:2], np.array(
-            self.font_author.getbbox(self.quote_author, anchor='rt')[2:])) * -1
-
-        x_min, y_min, x_max, y_max = tuple(
-            np.array(((0, 0), self.image.size)).flatten() + box_padding)
-
-        return np.random.random_integers(x_min, x_max),\
-            np.random.random_integers(y_min, y_max)
 
     def make_meme(self, img_path: str, quote_body: str,
                   quote_author: str, width: int = 500) -> str:
